@@ -8,10 +8,7 @@ use Dompdf\Options;
 use App\Models\user;
 use App\Models\event;
 use App\Models\resource;
-// use Barryvdh\DomPDF\PDF;
-// use Barryvdh\DomPDF\Facade as PDF;
 use Illuminate\Http\Request;
-use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\File;
 use RealRashid\SweetAlert\Facades\Alert;
@@ -113,46 +110,38 @@ class UserController extends Controller
 
     public function updateProfile(Request $request)
     {
-        // Validate the request
-        $request->validate([
-            'course' => ['required'],
-            'profile_picture' => 'image|mimes:png|max:1024',
-        ], [
-            'profile_picture.max' => 'Profile picture should not exceed 1MB'
-        ]);
-
-        // Retrieve the authenticated user
         $user = auth()->user();
 
-        // Processing file
+        $request->validate([
+            // 'course' => ['required', 'string'],
+            'profile_picture' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:1024', // max 1MB
+        ], [
+            'profile_picture.max' => 'Profile picture should not exceed 1MB',
+            'profile_picture.image' => 'Profile picture must be an image',
+        ]);
+
+        // $user->course = $request->course;
+
         if ($request->hasFile('profile_picture')) {
-            $image = $request->file('profile_picture');
-            $imageName = time() . '.' . $image->getClientOriginalExtension();
 
-            // Move the new file
-            $image->move(public_path('images/profilePictures'), $imageName);
-
-            // Check for existing profile picture and delete it
-            $existingProfilePicture = public_path('images/profilePictures' . DIRECTORY_SEPARATOR . $user->profile_picture);
-            if (File::exists($existingProfilePicture)) {
-                File::delete($existingProfilePicture);
+            if ($user->profile_picture) {
+                $existingPath = public_path('images/profilePictures/' . $user->profile_picture);
+                if (File::exists($existingPath)) {
+                    File::delete($existingPath);
+                }
             }
 
-            // Update user profile picture
-            $user->profile_picture = $imageName;
+            $path = $request->file('profile_picture')->store('public/profilePictures');
+
+            $user->profile_picture = str_replace('public/', 'storage/', $path);
         }
 
-        $user->course = $request->course;
-        // Save the user
         $user->save();
 
-        // Show success alert
-        Alert::success('Congrats', 'Successfully updated')->autoClose('5000');
+        Alert::success('Congrats', 'Profile updated successfully')->autoClose(5000);
 
-        // Redirect with success message
         return redirect()->route('member.dashboard');
     }
-
 
     public function discusionForum()
     {

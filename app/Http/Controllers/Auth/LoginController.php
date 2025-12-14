@@ -79,17 +79,15 @@ class LoginController extends Controller
                         toast('Welcome to Graphics department', 'success')->position('top')->autoClose('6000');
                         return redirect('admin/departments/graphics-designing/dashboard/');
                     }
-
-                    if ($department == 'root') {
-                        toast('Successfully logged in', 'success')->position('top')->autoClose('6000');
-                        return redirect('admin/AdminDashboard/');
-                    }
                 } else {
                     // Handle the case where the admin record is not found
                     toast('User is not an admin', 'error')->autoClose('6000');
                     return redirect('/login');
                 }
-            } else if ($user->usertype == 'user') {
+            } else if ($user->usertype == 'root') {
+                return redirect('admin/AdminDashboard/');
+            }
+            else if ($user->usertype == 'user') {
                 return redirect('user/Dashboard');
             }
         }

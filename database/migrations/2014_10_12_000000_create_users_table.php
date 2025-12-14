@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('email')->unique();
             $table->string('course');
             $table->string('category');
-            $table->enum('usertype', ['admin', 'user'])->default('user');
+            $table->enum('usertype', ['admin', 'user', 'root'])->default('user');
             $table->enum('payment_status', ['active', 'inactive'])->default('inactive');
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');

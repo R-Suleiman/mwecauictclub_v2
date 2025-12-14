@@ -2,8 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use Imagick;
-use DataTables;
 use Dompdf\Dompdf;
 use Dompdf\Options;
 use App\Models\User;
@@ -15,13 +13,10 @@ use App\Models\resource;
 use App\Models\department;
 use App\Models\Team_member;
 use Illuminate\Http\Request;
-use Dompdf\Image\ImageLoader;
 use App\Models\Registration_number;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\File;
 use App\Rules\UniqueRegistrationNumber;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Cache\RateLimiting\Limit;
 use RealRashid\SweetAlert\Facades\Alert;
 
 class AdminController extends Controller
@@ -83,10 +78,10 @@ class AdminController extends Controller
     {
         $authenticatedAdmin = Auth::user();
         $adminName = Auth::user()->fullname;
-        $allMembers = User::all()->count(); //fetching total number of members from the database
-        $activeMembers = user::where('payment_status', 'active')->count(); // fetching all active members
-        $inactiveMembers = user::where('payment_status', 'inactive')->count(); //fetching all inactive members
-        $totalDepartments = Department::all()->count();
+        $allMembers = User::where('usertype', '!=', 'root')->count(); //fetching total number of members from the database
+        $activeMembers = user::where('payment_status', 'active')->where('usertype', '!=', 'root')->count(); // fetching all active members
+        $inactiveMembers = user::where('payment_status', 'inactive')->where('usertype', '!=', 'root')->count(); //fetching all inactive members
+        $totalDepartments = Department::where('dept_name', '!=', 'root')->count();
         $members = User::where('id', '!=', $authenticatedAdmin->id)->get();
         return view('admin/AdminDashboard', compact(
             'adminName',
@@ -149,6 +144,7 @@ class AdminController extends Controller
 
         $activeMembers = User::where('payment_status', 'active')
         ->where('usertype', '!=', 'admin')
+        ->where('usertype', '!=', 'admin')
         ->get();
         return view('admin.active-members', compact('activeMembers'));
     }
@@ -157,16 +153,29 @@ class AdminController extends Controller
 
         $inactiveMembers = User::where('payment_status', 'inactive')
         ->where('usertype', '!=', 'admin')
+        ->where('usertype', '!=', 'admin')
         ->get();
         return view('admin.inactive-members', compact('inactiveMembers'));
     }
     //registering registration numbers
-    public function registerNumbers()
+    public function registerNumbers(Request $request)
     {
-        $totalNumbers = registration_number::all()
-            ->count();
-        return view('admin.registration-numbers', compact('totalNumbers'));
+        $totalNumbers = Registration_number::count();
+
+        // Search functionality
+        $search = $request->input('search');
+        $query = Registration_number::orderBy('created_at', 'desc');
+
+        if ($search) {
+            $query->where('registration_number', 'like', "%{$search}%");
+        }
+
+        $verifiedNumbers = $query->paginate(10)->withQueryString(); // 10 per page
+
+        return view('admin.registration-numbers', compact('totalNumbers', 'verifiedNumbers', 'search'));
     }
+
+
     //here department registers member registration before member sign up.
     public function store(Request $request)
     {
@@ -216,6 +225,10 @@ class AdminController extends Controller
         return redirect()->back();
     }
     //The following functions relates to resource repository view
+    public function addResource() {
+        return view('admin.resource_repository_form');
+    }
+
     public function Repository()
     {
 
@@ -249,73 +262,69 @@ class AdminController extends Controller
 
         return redirect(route('resource_repository'))->with('message', 'Resource Posted Successfully');
     }
+
     public function uploadResource(Request $request)
     {
         $request->validate([
             'title' => ['required', 'string'],
             'description' => ['required', 'string', 'max:255'],
             'category' => ['required'],
-            'file' => ['required', 'mimes:pdf', 'max:3000'], // max:3000 is 3MB in kilobytes
+            'file' => ['required', 'mimes:pdf', 'max:3000'],
             'thumbnail' => ['required', 'mimes:jpg,png', 'max:1000'],
-        ], [
-            'title.required' => 'The title is required.',
-            'title.string' => 'The title must be a string value.',
-            'description.required' => 'The description is required.',
-            'description.max' => 'The title must not exceed 255 characters.',
-            'category.required' => 'Please select a category for the resource.',
-            'file.required' => 'Please select a file to upload.',
-            'file.mimes' => 'Only files of type "application/pdf" are allowed.',
-            'file.max' => 'The uploaded file exceeds the maximum size of 3MB. Please select a smaller file.',
-            'thumbnail.required' => 'please select find thumbnail',
-            'thumbnail.mimes' => 'thumbnail can only be of type jpg or png',
-            'thumbnail.max' => 'maximum thumbnail size is 1MB'
         ]);
 
+        $thumbnailFile = $request->file('thumbnail');
+        $thumbnailName = time() . '_' . $thumbnailFile->getClientOriginalName();
+        $thumbnailPath = $thumbnailFile->storeAs(
+            'public/uploads/thumbnails',
+            $thumbnailName
+        );
 
-        //PROCESSING A THUMBNAIL
-        if ($request->hasFile('thumbnail')) {
-            $thumbnail = $request->file('thumbnail');
-            $thumbnailName = $thumbnail->getClientOriginalName();
-            $thumbnail->move(public_path('images/resourcesThumbnails/'), $thumbnailName);
-        }
+        $pdfFile = $request->file('file');
+        $pdfName = time() . '_' . $pdfFile->getClientOriginalName();
+        $pdfPath = $pdfFile->storeAs(
+            'public/uploads/pdfs',
+            $pdfName
+        );
 
-        //PROCESSING AND STORING A PDF FILE
-        $file = $request->file('file');
-        $fileName = time() . "_" . $file->getClientOriginalName();
-        $filePath = $file->storeAs('public/uploads/pdfs', $fileName);
-
-
-        //saving the information on to the database
-        $newResource = new resource();
-
-        $newResource->user_id = Auth::id();
-        $newResource->title = $request->title;
-        $newResource->description = $request->description;
-        $newResource->category = $request->category;
-        $newResource->file_name = $fileName;
-        $newResource->file_path = $filePath;
-        $newResource->thumbnail = $thumbnailName;
-
-        $newResource->save();
+        $resource = new Resource();
+        $resource->user_id = Auth::id();
+        $resource->title = $request->title;
+        $resource->description = $request->description;
+        $resource->category = $request->category;
+        $resource->file_name = $pdfName;
+        $resource->file_path = str_replace('public/', 'storage/', $pdfPath);
+        $resource->thumbnail = str_replace('public/', 'storage/', $thumbnailPath);
+        $resource->save();
 
         Alert::success('Message', 'Resource Posted Successfully');
         return redirect()->back();
     }
+
     public function destroy($id)
     {
         $resource = Resource::findOrFail($id);
 
-        // Delete the file from storage if it exists
-        if (Storage::exists($resource->file_path)) {
-            Storage::delete($resource->file_path);
+        if ($resource->file_path) {
+            $pdfPath = public_path($resource->file_path);
+            if (File::exists($pdfPath)) {
+                File::delete($pdfPath);
+            }
         }
 
-        // Delete the resource record from the database
+        if ($resource->thumbnail) {
+            $thumbPath = public_path($resource->thumbnail);
+            if (File::exists($thumbPath)) {
+                File::delete($thumbPath);
+            }
+        }
+
         $resource->delete();
 
         Alert::success('Message', 'Selected resource has been deleted successfully');
         return redirect()->back();
     }
+
     public function documentPreview($fileName)
     {
         // Ensure you are fetching the document using the correct field
@@ -340,8 +349,7 @@ class AdminController extends Controller
 
     public function memberList()
     {
-
-        $members = User::all();
+        $members = User::where('usertype', '!=', 'root')->get();
 
         return view('admin.member_list', compact('members'));
     }
@@ -361,6 +369,7 @@ class AdminController extends Controller
         $department = Department::findOrFail($id);
         return view('admin.edit_department', compact('department'));
     }
+
     public function updateDepartment(Request $request, $id)
     {
         $department = Department::findOrFail($id);
@@ -380,6 +389,14 @@ class AdminController extends Controller
         $department->dept_description = $request->dept_description;
 
         if ($request->hasFile('dept_cover')) {
+
+            if ($department->dept_cover) {
+                $oldPath = public_path($department->dept_cover);
+                if (File::exists($oldPath)) {
+                    File::delete($oldPath);
+                }
+            }
+
             $path = $request->file('dept_cover')->store('public/departments');
             $department->dept_cover = str_replace('public/', 'storage/', $path);
         }
@@ -389,14 +406,24 @@ class AdminController extends Controller
         Alert::success('Message', 'Department updated successfully');
         return redirect()->route('departments');
     }
-    public function departmentDestroy($id)
-    {
-        $departmentDestroy = department::findOrFail($id);
-        $departmentDestroy->delete();
 
-        Alert::success('Message', 'Department Successfully deleted');
-        return redirect()->back();
+    public function departmentDestroy($id)
+{
+    $department = Department::findOrFail($id);
+
+    if ($department->dept_cover) {
+        $filePath = public_path($department->dept_cover);
+        if (File::exists($filePath)) {
+            File::delete($filePath);
+        }
     }
+
+    $department->delete();
+
+    Alert::success('Message', 'Department Successfully deleted');
+    return redirect()->back();
+}
+
     public function addDepartment(Request $request)
     {
 
@@ -454,31 +481,98 @@ class AdminController extends Controller
     public function eventUpload(Request $request)
     {
         $request->validate([
-            'event_name' => ['required'],
-            'event_date' => ['required'],
-            'image' => 'required|image|mimes:jpeg,png,jpg,gif|max:9048',
-            'event_description' => ['required'],
+            'event_name' => ['required', 'string'],
+            'event_date' => ['required', 'date'],
+            'image' => ['required', 'image', 'mimes:jpeg,png,jpg,gif', 'max:9048'],
+            'event_description' => ['required', 'string'],
         ]);
 
-        // Handle File Upload
-        if ($request->hasFile('image')) {
-            $image = $request->file('image');
-            $imageName = time() . '.' . $image->getClientOriginalExtension();
-            $image->move(public_path('images/events'), $imageName);
-        } else {
-            $imageName = null;
+        // 🔹 PROCESS IMAGE
+        $imageFile = $request->file('image');
+        $imageName = time() . '_' . $imageFile->getClientOriginalName();
+        $imagePath = $imageFile->storeAs(
+            'public/uploads/events',
+            $imageName
+        );
+
+        // 🔹 CREATE EVENT
+        Event::create([
+            'event_name' => $request->event_name,
+            'event_date' => $request->event_date,
+            'image' => str_replace('public/', 'storage/', $imagePath),
+            'event_description' => $request->event_description,
+        ]);
+
+        return redirect()
+            ->route('AdminDashboard')
+            ->with('message', 'Event Created Successfully');
+    }
+
+    public function eventEdit($id)
+    {
+        $event = Event::findOrFail($id);
+        return view('admin.edit-event', compact('event'));
+    }
+
+    public function eventUpdate(Request $request, $id)
+{
+    $event = Event::findOrFail($id);
+
+    $request->validate([
+        'event_name' => ['required', 'string'],
+        'event_date' => ['required', 'date'],
+        'image' => ['nullable', 'image', 'mimes:jpeg,png,jpg,gif', 'max:9048'],
+        'event_description' => ['required', 'string'],
+    ]);
+
+    $event->event_name = $request->event_name;
+    $event->event_date = $request->event_date;
+    $event->event_description = $request->event_description;
+
+    if ($request->hasFile('image')) {
+
+        if ($event->image) {
+            $oldPath = public_path($event->image);
+            if (File::exists($oldPath)) {
+                File::delete($oldPath);
+            }
         }
 
-        // Create Event
-        Event::create([
-            'event_name' => $request->input('event_name'),
-            'event_date' => $request->input('event_date'),
-            'image' => $imageName,
-            'event_description' => $request->input('event_description'),
-        ]);
+        $imageFile = $request->file('image');
+        $imageName = time() . '_' . $imageFile->getClientOriginalName();
+        $imagePath = $imageFile->storeAs(
+            'public/uploads/events',
+            $imageName
+        );
 
-        return redirect()->route('AdminDashboard')->with('message', 'Event Created Successfully');
+        $event->image = str_replace('public/', 'storage/', $imagePath);
     }
+
+    $event->save();
+
+    return redirect()
+        ->route('AdminDashboard')
+        ->with('message', 'Event Updated Successfully');
+}
+
+public function eventDestroy($id)
+{
+    $event = Event::findOrFail($id);
+
+    if ($event->image) {
+        $imagePath = public_path($event->image);
+        if (File::exists($imagePath)) {
+            File::delete($imagePath);
+        }
+    }
+
+    $event->delete();
+
+    return redirect()
+        ->route('AdminDashboard')
+        ->with('message', 'Event Deleted Successfully');
+}
+
     public  function Events()
     {
 
@@ -486,12 +580,14 @@ class AdminController extends Controller
 
         return view('admin/events', compact('events'));
     }
+
     public function financialPanel()
     {
         $users = user::where('usertype', '!=', 'admin')->get();
         $payments = payment::with('user')->get();
         return view('admin.financial', compact('payments', 'users'));
     }
+
     public function addMemberPaymentDetails(Request $request)
     {
 
@@ -523,6 +619,7 @@ class AdminController extends Controller
         Alert::success('Message', 'Payment Information successfully added');
         return redirect()->back();
     }
+
     //updating member payment informations
     public function changePaymentInfoView($id)
     {
@@ -530,6 +627,7 @@ class AdminController extends Controller
         $payments = payment::findOrFail($id);
         return view('admin.update-user-financial-details', compact('payments'));
     }
+
     public function changePaymentExpirationDate(Request $request)
     {
 
@@ -609,11 +707,13 @@ class AdminController extends Controller
         Alert::success('Message', 'Successfully Added');
         return redirect()->back();
     }
+
     public function editTeamMember($id){
 
         $member = team_member::findOrFail($id);
         return view('admin.edit-team-member', compact('member'));
     }
+
     public function updateTeamMember(Request $request, $id){
 
         $updateTeamMember = team_member::findOrFail($id);
@@ -666,6 +766,7 @@ class AdminController extends Controller
         Alert::success('Message', 'Successfully updated');
         return redirect()->back();
     }
+
     //document related routes
     public function allRegisteredMembersPDF()
     {
@@ -729,6 +830,7 @@ class AdminController extends Controller
         // Output the generated PDF file
         return $pdf->stream('Mwecau ICT Club Registered Members.pdf');
     }
+
     public function activeMembers()
     {
         $activeMembers = User::where('payment_status', 'active')->get();
@@ -791,6 +893,7 @@ class AdminController extends Controller
         // Output the generated PDF file
         return $pdf->stream('ICT Club active members.pdf');
     }
+
     public function inactiveMembers()
     {
         $inactiveMembers = User::where('payment_status', 'inactive')->get();
@@ -853,6 +956,7 @@ class AdminController extends Controller
         // Output the generated PDF file
         return $pdf->stream('ICT Club inactive members.pdf');
     }
+
     public function departmentList()
     {
         $departments = Department::with('admins.user')
@@ -912,6 +1016,7 @@ class AdminController extends Controller
         // Output the generated PDF file
         return $pdf->stream('ICT Club Departments.pdf');
     }
+
     public function cyberMembers()
     {
         $cyberMembers = User::where('category', 'cyber security')->get();
@@ -974,6 +1079,7 @@ class AdminController extends Controller
         // Output the generated PDF file
         return $pdf->stream('ICT club cyber security members.pdf');
     }
+
     public function programmingMembers()
     {
         $programmingMembers = User::where('category', 'programming')->get();
@@ -1036,6 +1142,7 @@ class AdminController extends Controller
         // Output the generated PDF file
         return $pdf->stream('ICT club programming members.pdf');
     }
+
     public function graphicsMembers()
     {
         $graphicsMembers = User::where('category', 'graphics designing')->get();
@@ -1098,6 +1205,7 @@ class AdminController extends Controller
         // Output the generated PDF file
         return $pdf->stream('ICT club graphics members.pdf');
     }
+
     public function verifiedNumbers()
     {
         $registrationNumbers = Registration_number::all();
@@ -1157,5 +1265,15 @@ class AdminController extends Controller
 
         // Output the generated PDF file
         return $pdf->stream('ICT Club Verified Numbers.pdf');
+    }
+
+    //deleting registration number
+    public function deleteRegistrationNumber($id)
+    {
+        $registrationNumber = Registration_number::findOrFail($id);
+        $registrationNumber->delete();
+
+        Alert::success('Message', 'Registration number deleted successfully');
+        return redirect()->back();
     }
 }

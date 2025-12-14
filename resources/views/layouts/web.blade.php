@@ -23,6 +23,8 @@
         href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Condensed:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;1,100;1,200;1,300;1,400;1,500;1,600;1,700&display=swap"
         rel="stylesheet">
 
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
 
     <!-- for title img -->
     <link rel="shortcut icon" type="../image/icon" href="../img/logo.png" />
@@ -56,13 +58,6 @@
             @yield('content')
         </main>
         {{-- body section end  --}}
-
-        {{-- chat icon --}}
-        <section id="chat">
-            <div class="shadow-lg" id="chatIcon">
-                <i class="fas fa-comments"></i>
-            </div>
-        </section>
 
         {{-- footer --}}
         @include('partials.footer')

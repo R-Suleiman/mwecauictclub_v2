@@ -23,7 +23,7 @@
 
                     <div class="col-md-8 mt-3 mb-3">
                         <label class="mb-2" for="course">Course</label>
-                        <select class="form-select @error('course') is-invalid @enderror" name="course" id="course">
+                        <select class="form-select @error('course') is-invalid @enderror" name="course" id="course" disabled>
                             <option value="{{ $userInfo->course }}">{{ $userInfo->course }}</option>
                             <option value="BScCS">BScCS</option>
                             <option value="BAGEN">BAGEN</option>

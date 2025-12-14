@@ -50,7 +50,7 @@ class AdminMiddleware
         $user = Auth::user();
 
         // Check if the user is an admin
-        if ($user->usertype == 'admin') {
+        if ($user->usertype == 'admin' || $user->usertype == 'root') {
             // Check if the admin has admin records and a department assigned
             if ($user->admin && $user->admin->department) {
                 $departmentName = $user->admin->department->dept_name;

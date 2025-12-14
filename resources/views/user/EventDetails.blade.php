@@ -6,11 +6,11 @@
         <div class="row">
             <div class="col-12 col-md-12 col-lg-9">
                 <div class="car text-light" style="">
-                    <div class="card-body text-center">
-                        <h1 class="colorIcon text-uppercase mb-4">{{ $showEventDetails->event_name }}</h1>
-                        <img src="{{ asset('images/events/' . $showEventDetails->image) }}"
+                    <div class="card-body">
+                        <h1 class="colorIcon text-uppercase mb-4 text-center">{{ $showEventDetails->event_name }}</h1>
+                        <img src="{{ asset($showEventDetails->image) }}"
                             alt="{{ $showEventDetails->event_name }}" class="img-fluid shadow-lg"
-                            style="width:70%; height: 550px; border-radius: 4px;">
+                            style="width: 100%; height: 200px; object-fit: cover; border-radius: 5px; border: 1px solid #19c357">
                         <div class="mt-5">
                             <p class="text-dark mt-3">
                                {{ $showEventDetails->event_description }}

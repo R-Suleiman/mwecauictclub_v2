@@ -1,4 +1,36 @@
 <!--navbar-->
+@php
+    $user = Auth::user();
+
+    if($user) {
+        $dashboardRoute = match (true) {
+
+            // ROOT USER
+            $user->usertype === 'root'
+                => route('AdminDashboard'),
+
+            // ADMIN USER WITH DEPARTMENT
+            $user->usertype === 'admin' && $user->admin && $user->admin->department
+                => match ($user->admin->department->dept_name) {
+                    'programming'        => route('programming.dashboard'),
+                    'cyber security'     => route('cyberSecurity.department'),
+                    'graphics designing' => route('graphics.dashboard'),
+                    // default              => route('admin.dashboard'),
+                },
+
+            // NORMAL USER
+            $user->usertype === 'user'
+                => route('member.dashboard'),
+
+            // FALLBACK
+            default
+                => route('login'),
+        };
+    }
+@endphp
+
+
+
 <nav class="navbar navbar-expand-lg navbar-dark nav-modern sticky-top shadow-sm">
     <div class="container">
         <a href="{{ route('home') }}" class="navbar-brand d-flex align-items-center gap-2">
@@ -25,27 +57,13 @@
                         <a class="btn btn-modern px-3" href="{{ route('register') }}">Register</a>
                     @endif
                 @else
-                    <div class="dropdown">
-                        <button class="btn btn-secondary dropdown-toggle" type="button" id="userMenuButton"
-                            data-bs-toggle="dropdown" aria-expanded="false">
-                            {{ Auth::user()->fullname }}
-                        </button>
-                        <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userMenuButton">
-                            <li class="dropdown-item-text fw-semibold">{{ Auth::user()->registration_number }}</li>
-                            <li>
-                                <hr class="dropdown-divider">
-                            </li>
-                            <li>
-                                <a class="dropdown-item" href="{{ route('logout') }}"
-                                    onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-                                    {{ __('Logout') }}
-                                </a>
-                            </li>
-                        </ul>
-                        <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
-                            @csrf
-                        </form>
-                    </div>
+                <div class="dropdown">
+                    <a href="{{ $dashboardRoute }}"
+                       class="btn btn-secondary rounded-circle gap-1"
+                       >
+                        <i class="fa fa-user"></i>
+                    </a>
+                </div>
                 @endguest
             </div>
 

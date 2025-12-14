@@ -7,6 +7,8 @@ use App\Models\event;
 use App\Models\Comment;
 use App\Models\department;
 use App\Models\Team_member;
+use App\Mail\ContactInquiryMail;
+use Illuminate\Support\Facades\Mail;
 
 class HomeController extends Controller
 {
@@ -55,7 +57,16 @@ class HomeController extends Controller
 
         $comment->save();
 
-        toast('Message derived', 'success')->position('bottom-start')->autoClose('6000');
+        $payload = [
+            'fullname' => $request->fullname,
+            'email' => $request->email,
+            'category' => $request->category,
+            'message' => $request->message,
+        ];
+
+        Mail::to('info@mwecauictclub.ac.tz')->send(new ContactInquiryMail($payload));
+
+        toast('Message sent successfully!', 'success')->position('bottom-start')->autoClose('6000');
         return redirect()->back();
     }
 

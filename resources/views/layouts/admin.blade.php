@@ -130,7 +130,7 @@
                     </ul>
                 </div>
 
-                <a href="{{ route('post_event') }}">
+                <a href="{{ route('events') }}">
                     <button class="w-100 btn btn-dark mt-3 text-start"> <i class="fa fa-users"></i>
                         <small>Event Management</small>
                     </button>

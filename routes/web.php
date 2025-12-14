@@ -9,6 +9,7 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\CyberSecurityController;
 use App\Http\Controllers\GraphicsDesigningController;
 use App\Http\Controllers\ProgrammingController;
+use App\Models\department;
 use Illuminate\Support\Facades\Http;
 
 /*
@@ -25,7 +26,8 @@ use Illuminate\Support\Facades\Http;
 Route::get('/', function () {
     $teamMembers = team_member::all();
     $news = event::all();
-    return view('index', compact('news', 'teamMembers'));
+    $departments = Department::where('dept_name', '!=', 'root')->take(4)->get();
+    return view('index', compact('news', 'teamMembers', 'departments'));
 });
 
 // //route to access notification folder for admin
@@ -97,7 +99,8 @@ Route::controller(AdminController::class)->prefix('admin')->middleware('admin')-
     Route::get('AdminDashboard', 'Dashboard')->name('AdminDashboard');
     //registraion number related routes
     Route::get('/registration-numbers', 'registerNumbers')->name('admin.register.number');
-    Route::post('/store', 'store')->name('store'); ///storing registration numbers
+    Route::post('/registration-numbers/store', 'store')->name('store'); ///storing registration numbers
+    Route::delete('/registration-numbers/delete/{id}', 'deleteRegistrationNumber')->name('admin.delete.registration.number');
     //website
     //contact page
     Route::get('comments', 'comments')->name('admin.comments');
@@ -107,12 +110,17 @@ Route::controller(AdminController::class)->prefix('admin')->middleware('admin')-
     Route::post('/add-team-member', 'addTeamMember')->name('add.team.member');
     Route::get('/edit-team-member/{id}', 'editTeamMember')->name('edit.team.member');
     Route::put('/update-team-member/{id}', 'updateTeamMember')->name('update.team.member');
+    Route::get('events', 'events')->name('events');
     Route::get('post_page', 'post')->name('post_event');
     Route::post('eventUpload', 'eventUpload')->name('eventUpload');
+    Route::get('eventEdit/{id}', 'eventEdit')->name('eventEdit');
+    Route::put('eventUpdate/{id}', 'eventUpdate')->name('eventUpdate');
+    Route::delete('eventDestroy/{id}', 'eventDestroy')->name('eventDestroy');
 
     Route::get('add_Member', 'addMember')->name('admin.register.member');
     Route::delete('/delete/member/{id}', 'memberDestroy')->name('destroy.member');
     Route::get('resource_repository', 'Repository')->name('resource_repository');
+
     //super admin resource routes
     Route::post('storeResource', 'storeResource')->name('storeResource');
     Route::post('uploadResource', 'uploadResource')->name('admin.upload.resources');
@@ -131,7 +139,6 @@ Route::controller(AdminController::class)->prefix('admin')->middleware('admin')-
 
     Route::get('update/{id}', 'update')->name('update');
     Route::put('edit/{id}', 'edit')->name('edit');
-    Route::get('events', 'events')->name('events');
     Route::post('newDepartment', 'newDepartment')->name('newDepartment');
     Route::post('newMember', 'newMember')->name('newMember');
     //financial related routes
@@ -255,7 +262,7 @@ Route::controller(GraphicsDesigningController::class)->prefix('admin/departments
     // Route::get('/name/search', 'searchByRegNumber')->name('names.search');
     // Route::get('/cyber-security/registration-numbers', 'registerNumbers')->middleware('cyber-security')->name('cyber-security.register.number');
 
-    Route::post('/store', 'store')->name('store'); ///storing registration numbers
+    Route::post('/registration-numbers/store', 'store')->name('store'); ///storing registration numbers
 });
 
 // Defining user Routes

@@ -40,7 +40,7 @@
                         </li>
                         <li class="nav-item"><a class="nav-link" href="{{ route('resources.page') }}">Resources</a>
                         </li>
-                        <li class="nav-item"><a class="nav-link" href="{{ route('discusion-forum.page') }}">Discussion
+                        <li class="nav-item"><a class="nav-link" href="https://mwecauictclubforum.onrender.com?username={{ Auth::user()->registration_number }}&room={{ Auth::user()->category }}">Discussion
                                 Forum</a>
                         </li>
                     </ul>

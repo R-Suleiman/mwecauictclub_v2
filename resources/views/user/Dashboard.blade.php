@@ -1,155 +1,156 @@
 @extends('layouts.user')
 @section('content')
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-        }
 
-        .color {
-            background-color: #2C3592;
-        }
+{{-- Page-level styles (clean + minimal) --}}
 
-        .favcolor {
-            color: #2C3592;
-        }
+<style>
+    :root {
+        --primary: #2C3592;
+        --accent: #19c357;
+    }
 
-        .userbtn {
-            background-color: #2C3592;
-        }
+    .bg-primary-soft {
+        background: linear-gradient(135deg, var(--primary), #1f256b);
+    }
 
-        .col-12.col-md-10 .img-fluid {
-            border: 3px solid #19c357;
-        }
+    .text-primary-soft { color: var(--primary); }
 
-        .col-12.col-md-10.col-lg-6 .card {
-            border: 2px solid #2C3592;
-            border-radius: 4px;
-        }
+    .profile-avatar {
+        width: 140px;
+        height: 140px;
+        object-fit: cover;
+        border: 4px solid var(--accent);
+    }
 
-        .col-12.col-md-12.col-lg-6 h5 {
-            border-bottom: 2px solid #1b0922;
-        }
-    </style>
+    .info-label { color: #6c757d; font-size: .9rem; }
+    .info-value { font-weight: 600; }
 
-    </head>
+    .dashboard-card {
+        border: none;
+        border-radius: 14px;
+    }
+
+    .dashboard-card .card-header {
+        border-radius: 14px 14px 0 0;
+    }
+</style>
+
+<div class="container py-5">
 
 
-    <div class="container mt-5">
-        <div>
-            @if (session()->has('success'))
-                <div class="alert alert-success" role="alert">
-                    {{ session('success') }}
-                </div>
-            @endif
+{{-- Flash Messages --}}
+@foreach (['success' => 'success', 'fail' => 'danger'] as $key => $type)
+    @if (session()->has($key))
+        <div class="alert alert-{{ $type }} alert-dismissible fade show" role="alert">
+            {{ session($key) }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
         </div>
-        <div>
-            @if (session()->has('fail'))
-                <span class="alert alert-danger p-3 mt-5">
-                    {{ session('fail') }}
-                </span>
-            @endif
-        </div>
+    @endif
+@endforeach
+
+{{-- Profile reminder --}}
+@if (!Auth::user()->profile_picture)
+    <div class="alert alert-warning text-center">
+         Hi <strong>{{ Auth::user()->fullname }}</strong>, please update your profile picture for a better experience.
     </div>
-    <section class="mt-4 p-4">
-        <div class="container">
-            <!-- Display the alert message -->
-            @if (!Auth::user()->profile_picture)
-                <div class="alert alert-warning text-center" role="alert">
-                    Hi, <strong>{{ Auth::user()->fullname }}</strong> Click On Profile Update to Change Your Profile
-                    Picture. </a>
-                </div>
-            @endif
-            <div class="row">
-                <div class="col-12 col-md-10 col-lg-6">
-                    <div class="card shadow-lg">
-                        <div class="details text-light color">
-                            <h6 class="mx-3 mt-3 fs-6 fw-bold">Club Member</h6>
-                        </div>
-                        <div class="card-tittle text-center">
-                            <h6 class="mx-3 text-decoration-underline fs-6 fw-bold">Informations</h6>
-                        </div>
-                        <div class="card-body d-flex">
-                            @if (Auth::User()->profile_picture)
-                                <img src="{{ asset('images/profilePictures/' . Auth::User()->profile_picture) }}"
-                                    class="img-fluid rounded-circle mt-auto" alt="Profile Picture"
-                                    style="width: 130px; height:130px">
-                            @else
-                                <div class="">
-                                    <img src="../img/logo.jpg" class="img-fluid rounded-circle mt-auto"
-                                        alt="Profile Picture" style="width: 130px; height:130px">
+@endif
 
-                                </div>
-                            @endif
-                            <div class="mx-auto">
-                                <p><strong>RegNo:</strong> {{ Auth::user()->registration_number }}</p>
-                                <p><strong>Full Name: </strong> {{ Auth::user()->fullname }}</p>
-                                <p><strong>Course:</strong> {{ Auth::user()->course }}</p>
-                                <p><strong>Category: </strong> {{ Auth::user()->category }}</p>
-                            </div>
-                        </div>
-                        <a class="btn color text-white fs-5"
-                            href="{{ route('member.profile.update.form', [$authenticatedUser->id]) }}">
-                            Update Profile</a>
+<div class="row g-4 align-items-stretch">
 
-                            <a class="btn color text-white fs-5 mt-2" href="{{ route('membership.card.print') }}">
-                                Print Membership Card
-                            </a>
+    {{-- PROFILE CARD --}}
+    <div class="col-lg-5">
+        <div class="card dashboard-card shadow-sm h-100">
+            <div class="card-header bg-primary-soft text-white">
+                <strong>Member Profile</strong>
+            </div>
+
+            <div class="card-body text-center">
+                <img
+                    src="{{ Auth::user()->profile_picture
+                        ? asset(Auth::user()->profile_picture)
+                        : asset('img/logo.jpg') }}"
+                    class="rounded-circle profile-avatar mb-3"
+                    alt="Profile Picture">
+
+                <h5 class="fw-bold text-muted mb-1">{{ Auth::user()->fullname }}</h5>
+                <p class="text-muted mb-3">{{ Auth::user()->registration_number }}</p>
+
+                <div class="row text-start px-3">
+                    <div class="col-6 mb-2">
+                        <div class="info-label">Course</div>
+                        <div class="info-value">{{ Auth::user()->course }}</div>
                     </div>
-                </div>
-                <div class="col-12 col-md-12 col-lg-6 mt-5">
-                    <h4 class="text-dark fw-bold">Welcome, <span class="colorIcon fw-bold text-uppercase">
-                            {{ Auth::user()->fullname }}</span>
-                        <small class="favcolor"></small> to your
-                        ICT Club Member Dashboard
-                    </h4>
-
-                    <p>Here you can access various features and functionalities related to your membership.</p>
-                    <p>Feel free to explore and engage with the club activities!</p>
-
-                    <div> <strong>Payment Status: </strong> <span class="colorIcon fw-bold fs-4">
-                            {{ Auth::user()->payment_status }}
-                        </span>
+                    <div class="col-6 mb-2">
+                        <div class="info-label">Category</div>
+                        <div class="info-value text-uppercase">{{ Auth::user()->category }}</div>
                     </div>
-                    <!-- Display posts to users -->
-                    <div class="posts">
+                    <div class="col-12 mt-2">
+                        <div class="info-label">Payment Status</div>
+                        <span class="badge bg-success fs-6">{{ Auth::user()->payment_status }}</span>
                     </div>
                 </div>
             </div>
-        </div>
-    </section>
-    <section>
-        <div class="container">
-            <h5 class="text-dark"> <span class="fw-bold"> Fellow {{ Auth::user()->category }}</span> Member's</h5>
-            <table class="table table-primary table-hover table-responsive table-bordered table-striped">
-                <thead>
-                    <tr class="fw-bold">
-                        <td>S/N</td>
-                        <td>REGISTRATION NUMBER</td>
-                        <td>CATEGORY</td>
-                    </tr>
-                </thead>
-                <tbody>
-                    @php
-                        $counter = 1;
-                    @endphp
-                    @foreach ($fellowMembers as $fellowMember)
-                        <tr>
-                            <td>{{ $counter++ }}</td>
-                            <td>{{ $fellowMember->registration_number }}</td>
-                            <td class="text-uppercase">{{ $fellowMember->category }}</td>
-                        </tr>
-                    @endforeach
-                </tbody>
-            </table>
 
-        </div>
-    </section>
-    <div class="container">
-        <div class="alert alert-warning fs-5 fst-italic" role="alert">
-            <p> <strong> NOTE: </strong> For Any Missing or incorrect information please Contact, <strong>Mr: Mahuyemba
-                </strong></p>
+            <div class="card-footer bg-white d-grid gap-2">
+                <a href="{{ route('member.profile.update.form', [$authenticatedUser->id]) }}"
+                   class="btn btn-outline-primary">
+                    Update Profile
+                </a>
+                <a href="{{ route('membership.card.print') }}" class="btn btn-primary">
+                    Print Membership Card
+                </a>
+            </div>
         </div>
     </div>
+
+    {{-- WELCOME / INFO --}}
+    <div class="col-lg-7">
+        <div class="card dashboard-card shadow-sm h-100">
+            <div class="card-body">
+                <h3 class="fw-bold mb-3">
+                    Welcome back, <span class="text-primary-soft text-uppercase">{{ Auth::user()->fullname }}</span>
+                </h3>
+
+                <p class="text-muted">
+                    This is your ICT Club member dashboard. From here, you can manage your profile,
+                    track your membership status, and stay connected with fellow members.
+                </p>
+
+                <hr>
+
+                <h5 class="fw-bold text-muted mb-3">Fellow {{ ucfirst(Auth::user()->category) }} Members</h5>
+
+                <div class="table-responsive">
+                    <table class="table table-hover align-middle">
+                        <thead class="table-light">
+                            <tr>
+                                <th>#</th>
+                                <th>Registration No</th>
+                                <th>Category</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($fellowMembers as $index => $member)
+                                <tr>
+                                    <td>{{ $index + 1 }}</td>
+                                    <td>{{ $member->registration_number }}</td>
+                                    <td class="text-uppercase">{{ $member->category }}</td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+{{-- Footer note --}}
+<div class="alert alert-info mt-5">
+    <strong>Note:</strong> If any of your information is missing or incorrect,
+    please contact the <strong>Club Chairperson</strong> for assistance.
+</div>
+
+</div>
 @endsection

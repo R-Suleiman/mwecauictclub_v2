@@ -10,6 +10,5 @@ class Registration_number extends Model
     use HasFactory;
     protected $fillable = [
         'registration_number'
-
     ];
 }

@@ -6,7 +6,7 @@
         .card {
             border: 1px solid #000;
             padding: 20px;
-            width: 300px;
+            width: full;
             text-align: center;
         }
         .profile-picture {
@@ -51,9 +51,6 @@
     <div class="card shadow-lg">
         <div class="details text-light color">
             <h6 class="mx-3 mt-3 fs-6 fw-bold">Club Member</h6>
-        </div>
-        <div class="card-tittle text-center">
-            <h6 class="mx-3 text-decoration-underline fs-6 fw-bold">Informations</h6>
         </div>
         <div class="card-body d-flex">
             <img src="{{ $profilePicture }}" class="img-fluid rounded-circle mt-auto profile-picture" alt="Profile Picture">
