@@ -1,4 +1,4 @@
-@extends('layouts.we')
+@extends('layouts.web')
 
 @include('links')
 

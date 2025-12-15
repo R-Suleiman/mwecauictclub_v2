@@ -107,7 +107,7 @@ class AdminController extends Controller
 
     public function newMember(Request $request)
     {
-
+ 
         $request->validate([
             'registration_number' => ['required', 'unique:users'],
             'fullname' => ['required', 'string', 'max:255'],

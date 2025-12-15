@@ -88,7 +88,7 @@
     <div class="welcome-container">
         <h1>Welcome, <strong class="text-warning">{{ $userInfo->fullname }}</strong></h1>
         <p>We're kindly requesting you to
-            <a href="https://mwecauictclubforum.onrender.com?username={{ Auth::user()->registration_number }}&room={{ Auth::user()->category }}&usertype=user" target="_blank">click here</a> to access the full club discussion forum.
+            <a href="https://mwecauictclubforum.onrender.com?username={{ Auth::user()->registration_number }}&room={{ Auth::user()->category }}&userType=user" target="_blank">click here</a> to access the full club discussion forum.
         </p>
     </div>
 

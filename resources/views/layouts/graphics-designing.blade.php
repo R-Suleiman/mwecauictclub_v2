@@ -169,14 +169,21 @@
                         </button>
                     </a> <br>
 
-                    <a href="https://mwecauictclubforum.onrender.com?username={{ Auth::user()->registration_number }}&room={{ Auth::user()->category }}"
+                    <a href="https://mwecauictclubforum.onrender.com?username={{ Auth::user()->registration_number }}&room={{ Auth::user()->category }}&userType=admin"
                         target="_blank">
                         <button class="w-100 departmentBtn mt-3 text-start">
                             <i class="fa fa-message" aria-hidden="true"></i>
                             <small>Chat Forum</small>
                         </button>
                     </a><br>
-                    
+
+                    <a href="{{ route('graphics.password.change') }}">
+                        <button class="w-100 departmentBtn mt-3 mb-2">
+                            <i class="fa fa-lock" aria-hidden="true"></i>
+                            <small>Change Password</small>
+                        </button>
+                    </a>
+
                     {{--    laravel default login script --}}
                     <a href="{{ route('logout') }}" class="text-decoration-none fw-bold text-warning "
                         onclick="event.preventDefault(); document.getElementById('logout-form').submit();">

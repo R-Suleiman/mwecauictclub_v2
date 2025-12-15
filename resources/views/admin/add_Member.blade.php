@@ -36,7 +36,7 @@
 
                     <div class="col-12 col-md-12 col-lg-6 mb-4">
                         <label class="mb-2" for="email">E-Mail</label>
-                        <input type="email" class="form-control @error('fullname') is-invalid @enderror" name="email" value="{{old('email')}}"
+                        <input type="email" class="form-control @error('email') is-invalid @enderror" name="email" value="{{old('email')}}"
                                placeholder="Enter Valid E-Mail Address">
 
                         @error('email')

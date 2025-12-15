@@ -182,7 +182,7 @@
                     </ul>
                 </div>
 
-                <a href="https://mwecauictclubforum.onrender.com?username={{ Auth::user()->registration_number }}&room={{ Auth::user()->category }}"
+                <a href="https://mwecauictclubforum.onrender.com?username={{ Auth::user()->registration_number }}&room={{ Auth::user()->category }}&userType=admin"
                     target="_blank">
                     <button class="w-100 btn btn-dark mt-3 text-start">
                         <i class="fa fa-message" aria-hidden="true"></i>
@@ -213,6 +213,13 @@
                         </li>
                     </ul>
                 </div>
+
+                <a href="{{ route('admin.password.change') }}">
+                    <button class="w-100 btn btn-dark mt-3 text-start">
+                        <i class="fa fa-lock" aria-hidden="true"></i>
+                        <small>Change Password</small>
+                    </button>
+                </a>
 
                 <a class="btn btn-secondary btn-sm mt-2 w-100 text-start" href="{{ route('logout') }}"
                     onclick="event.preventDefault(); document.getElementById('logout-form').submit();">

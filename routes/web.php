@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\UserController;
 use App\Http\Controllers\AdminController;
+use App\Http\Controllers\Auth\ChangePasswordController;
 use App\Http\Controllers\CyberSecurityController;
 use App\Http\Controllers\GraphicsDesigningController;
 use App\Http\Controllers\ProgrammingController;
@@ -91,6 +92,12 @@ Route::get('/privacy-policy', [App\Http\Controllers\HomeController::class, 'priv
 Route::get('/licence and use', [App\Http\Controllers\HomeController::class, 'licenceAndUse'])->name('licence and use.page');
 Route::get('/login', [App\Http\Controllers\Auth\LoginController::class, 'showLoginForm'])->name('login');
 
+// change password
+Route::post('/update-password', [ChangePasswordController::class, 'updatePassword'])
+    ->name('password.update')
+    ->middleware('auth');
+
+
 // Defining super Admin Routes
 Route::controller(AdminController::class)->prefix('admin')->middleware('admin')->group(function () {
     Route::get('/assign-admin', 'showAssignForm')->name('showAssignForm');
@@ -155,6 +162,9 @@ Route::controller(AdminController::class)->prefix('admin')->middleware('admin')-
     Route::get('/cyber-members', 'cyberMembers')->name('club.cyber.members');
     Route::get('/programming-members', 'programmingMembers')->name('club.programming.members');
     Route::get('/graphics-members', 'graphicsMembers')->name('club.graphics.members');
+
+    Route::get('/change-password', [ChangePasswordController::class, 'changePasswordAdmin'])
+    ->name('admin.password.change');
 });
 
 // Defining programming admin Routes
@@ -187,6 +197,9 @@ Route::controller(ProgrammingController::class)->prefix('admin/departments')->mi
     Route::get('/programming-messages', 'programmingMessages')->name('programming.messages');
     Route::delete('/programming/message-destroty{id}', 'messageDestroy')->name('programming.message.destroy');
     Route::get('/name/search', 'searchByRegNumber')->name('names.search');
+
+    Route::get('/change-password', [ChangePasswordController::class, 'changePasswordProg'])
+    ->name('prog.password.change');
 
     // Route::get('/name/search', 'searchByRegNumber')->name('names.search');
     // Route::get('/cyber-security/registration-numbers', 'registerNumbers')->middleware('cyber-security')->name('cyber-security.register.number');
@@ -224,6 +237,9 @@ Route::controller(CyberSecurityController::class)->prefix('admin/departments')->
     Route::get('/cyberSecurity-messages', 'cyberMessages')->name('cyber-security.messages');
     Route::delete('/cyber-security/message-destroty{id}', 'messageDestroy')->name('cyber-security.message.destroy');
     Route::get('/name/search', 'searchByRegNumber')->name('names.search');
+
+    Route::get('/change-password', [ChangePasswordController::class, 'changePasswordCyber'])
+    ->name('cyber.password.change');
 });
 
 // Defining Graphics and Designing admin Routes
@@ -263,6 +279,9 @@ Route::controller(GraphicsDesigningController::class)->prefix('admin/departments
     // Route::get('/cyber-security/registration-numbers', 'registerNumbers')->middleware('cyber-security')->name('cyber-security.register.number');
 
     Route::post('/registration-numbers/store', 'store')->name('store'); ///storing registration numbers
+
+    Route::get('/change-password', [ChangePasswordController::class, 'changePasswordGraphics'])
+    ->name('graphics.password.change');
 });
 
 // Defining user Routes
@@ -281,6 +300,9 @@ Route::controller(UserController::class)->prefix('user')->middleware(['auth', 'u
     //document related routes
     Route::get('preview/{file}', 'documentPreview')->name('resource.preview');
     Route::get('/membership-card/print', 'generateMembershipCard')->name('membership.card.print');
+
+    Route::get('/change-password', [ChangePasswordController::class, 'changePasswordUser'])
+    ->name('user.password.change');
 });
 
 // Defining user Routes
