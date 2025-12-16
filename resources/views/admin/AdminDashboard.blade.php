@@ -18,7 +18,7 @@
 
                 </div>
             </div>
-        </div>
+        </div> 
 
         <div class="col-12 col-md-6 col-lg-3 mt-2">
             <div class="DashboardCard text-light shadow hv">

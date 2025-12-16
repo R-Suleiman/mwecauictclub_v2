@@ -58,7 +58,7 @@
             <div class="form-group mt-2">
                 <div class="mt-4">
                     <h6>Resource thumbnail</h6>
-                    <img src="{{ asset('images/resourcesThumbnails/' . $resources->thumbnail) }}"
+                    <img src="{{ asset($resources->thumbnail) }}"
                         class="img-fluid w-50 mt-1" alt="Profile Picture" style="height: 190px; border-radius: 5px;">
                 </div>
 

@@ -74,7 +74,7 @@
                         <div class="card">
                             <div class="card-header text-primary">{{ $resource->file_name }}</div>
                             <div class="card-body">
-                                <img src="{{ asset('images/resourcesThumbnails/' . $resource->thumbnail) }}"
+                                <img src="{{ asset($resource->thumbnail) }}"
                                     class="img-fluid mt-auto" alt="Profile Picture"
                                     style="height:130px; ">
                                 <div class="card-text text-dark">{{ $resource->description }}</div>

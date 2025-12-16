@@ -21,10 +21,12 @@ class CyberSecurityController extends Controller
         $authenticatedUser = Auth::user();
         $cyberSecurityMembers = User::where('category', 'cyber security')
             ->where('usertype', '!=', 'admin')
+            ->where('usertype', '!=', 'root')
             ->get();
 
         $totalCyberSecurityMembers = user::where('category', 'cyber security')
             ->where('id', '!=', $authenticatedUser->id)
+            ->where('usertype', '!=', 'root')
             ->count();
 
         //fetching all active members under programming department
@@ -36,15 +38,18 @@ class CyberSecurityController extends Controller
         //fetching all active members under cyber department department
         $activeMember = user::where('payment_status', 'active')
             ->where('category', 'cyber security')
+            ->where('usertype', '!=', 'root')
             ->where('id', '!=', $authenticatedUser->id)
             ->get();
         //fetching all inactive members under cyber department department
         $inactiveMembers = user::where('payment_status', 'inactive')
             ->where('category', 'cyber security')
+            ->where('usertype', '!=', 'root')
             ->where('id', '!=', $authenticatedUser->id)
             ->get();
         $totalinactiveMembers = user::where('payment_status', 'inactive')
             ->where('category', 'cyber security')
+            ->where('usertype', '!=', 'root')
             ->where('id', '!=', $authenticatedUser->id)
             ->count();
 
@@ -109,6 +114,7 @@ class CyberSecurityController extends Controller
     {
         $cybersecurityMembers = user::where('category', 'cyber security')
             ->where('usertype', '!=', 'admin')
+            ->where('usertype', '!=', 'root')
             ->get();
         return view('admin.departments.cyber-security.cyber-security-members', compact('cybersecurityMembers'));
     }
@@ -384,6 +390,7 @@ class CyberSecurityController extends Controller
         // $user = User::where('registration_number', $searchNumber)->first();
         $user = User::where('registration_number', $searchNumber)
             ->where('usertype', '!=', 'admin')
+            ->where('usertype', '!=', 'root')
             ->where('category', '=', 'cyber security')
             ->select('id', 'registration_number', 'fullname', 'course', 'category', 'email', 'created_at')->first();
         $totalResults = User::where('registration_number', $searchNumber)->select('id', 'registration_number', 'fullname', 'course', 'category', 'email', 'created_at')->count();

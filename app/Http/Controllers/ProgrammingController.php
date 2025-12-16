@@ -25,6 +25,7 @@ class ProgrammingController extends Controller
         // $user = User::where('registration_number', $searchNumber)->first();
         $user = User::where('registration_number', $searchNumber)
             ->where('usertype', '!=', 'admin')
+            ->where('usertype', '!=', 'root')
             ->where('category', '=', 'programming')
             ->select('id', 'registration_number', 'fullname', 'course', 'category', 'email', 'created_at')->first();
         $totalResults = User::where('registration_number', $searchNumber)->select('id', 'registration_number', 'fullname', 'course', 'category', 'email', 'created_at')->count();
@@ -48,34 +49,40 @@ class ProgrammingController extends Controller
         $authicatedUser = Auth::user();
         $programmingMembers = User::where('category', 'programming')
             ->where('usertype', '!=', 'admin')
+            ->where('usertype', '!=', 'root')
             ->get();
 
         $totalProgrammingMembers = User::where('category', 'programming')
             ->where('id', '!=', $authicatedUser->id)
             ->where('usertype', '!=', 'admin')
+            ->where('usertype', '!=', 'root')
             ->count();
 
         //fetching all active members under programming department
         $totalActiveMembers = user::where('payment_status', 'active')
             ->where('category', 'programming')
             ->where('usertype', '!=', 'admin')
+            ->where('usertype', '!=', 'root')
             ->where('id', '!=', $authicatedUser->id)
             ->count();
 
         $activeMembers = user::where('payment_status', 'active')
             ->where('category', 'programming')
             ->where('usertype', '!=', 'admin')
+            ->where('usertype', '!=', 'root')
             ->where('id', '!=', $authicatedUser->id)
             ->get();
 
         //fetching all inactive members under programming department
         $totalInactiveMembers = user::where('payment_status', 'inactive')
             ->where('category', 'programming')
+            ->where('usertype', '!=', 'root')
             ->where('id', '!=', $authicatedUser->id)
             ->count();
 
         $inactiveMembers = user::where('payment_status', 'inactive')
             ->where('category', 'programming')
+            ->where('usertype', '!=', 'root')
             ->where('id', '!=', $authicatedUser->id)
             ->get();
 

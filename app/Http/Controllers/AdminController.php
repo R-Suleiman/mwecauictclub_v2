@@ -82,7 +82,7 @@ class AdminController extends Controller
         $activeMembers = user::where('payment_status', 'active')->where('usertype', '!=', 'root')->count(); // fetching all active members
         $inactiveMembers = user::where('payment_status', 'inactive')->where('usertype', '!=', 'root')->count(); //fetching all inactive members
         $totalDepartments = Department::where('dept_name', '!=', 'root')->count();
-        $members = User::where('id', '!=', $authenticatedAdmin->id)->get();
+        $members = User::where('id', '!=', $authenticatedAdmin->id)->where('usertype', '!=', 'root')->get();
         return view('admin/AdminDashboard', compact(
             'adminName',
             'allMembers',
@@ -107,7 +107,7 @@ class AdminController extends Controller
 
     public function newMember(Request $request)
     {
- 
+
         $request->validate([
             'registration_number' => ['required', 'unique:users'],
             'fullname' => ['required', 'string', 'max:255'],
@@ -671,7 +671,7 @@ public function eventDestroy($id)
             'x' => ['nullable', 'url'],
             'whatsApp' => ['nullable', 'url'],
             'facebook' => ['nullable', 'url'],
-            'profile_image' => ['required', 'mimes: jpg,png', 'max:1024'],
+            'profile_image' => ['required', 'mimes:jpg,png,jpeg,avif', 'max:1024'],
         ], [
             'name.required' => 'Team member name is required',
             'name.max' => 'Team member name too long',
@@ -690,9 +690,12 @@ public function eventDestroy($id)
         if ($request->hasFile('profile_image')) {
             $profileImage = $request->file('profile_image');
             $profileImageName = time() . '_' . $profileImage->getClientOriginalName();
-            $profileImage->move(public_path('images/profilePictures'), $profileImageName);
+            $imagePath = $profileImage->storeAs(
+                'public/uploads/profilePictures',
+                $profileImageName
+            );
 
-            $newTeamMember->profile_image = $profileImageName;
+            $newTeamMember->profile_image = str_replace('public/', 'storage/', $imagePath);
         }
 
         $newTeamMember->name = $request->name;
@@ -726,7 +729,7 @@ public function eventDestroy($id)
             'x' => ['nullable', 'url'],
             'whatsApp' => ['nullable', 'url'],
             'facebook' => ['nullable', 'url'],
-            'profile_image' => ['mimes: jpg,png', 'max:1024'],
+            'profile_image' => ['mimes:jpg,png,jpeg,avif', 'max:1024'],
         ], [
             'name.required' => 'Team member name is required',
             'name.max' => 'Team member name too long',
@@ -739,20 +742,24 @@ public function eventDestroy($id)
             'profile_image.max' => 'Image to upload should not exceed 1MB',
         ]);
 
-        if($request->hasFile('profile_image')){
-            $profileImage = $request->file('profile_image');
-            $profileImageName = time() . '_' . $profileImage->getClientOriginalName();
-            $profileImage->move(public_path('images/profilePictures'), $profileImageName);
+        if ($request->hasFile('profile_image')) {
 
-            //checking and deleting the existing profile image
-            $existingProfileImage = public_path('images/profilePictures' . DIRECTORY_SEPARATOR . $updateTeamMember->profile_image);
-            if(File::exists($existingProfileImage)){
-                File::delete($existingProfileImage);
+            if ($updateTeamMember->profile_image ) {
+                $oldPath = public_path($updateTeamMember->profile_image);
+                if (File::exists($oldPath)) {
+                    File::delete($oldPath);
+                }
             }
-            $updateTeamMember->profile_image = $profileImageName;
-        }
 
-        //saving other details
+            $imageFile = $request->file('profile_image');
+            $imageName = time() . '_' . $imageFile->getClientOriginalName();
+            $imagePath = $imageFile->storeAs(
+                'public/uploads/profilePictures',
+                $imageName
+            );
+
+            $updateTeamMember->profile_image = str_replace('public/', 'storage/', $imagePath);
+        }
 
         $updateTeamMember->name = $request->name;
         $updateTeamMember->title = $request->title;
@@ -959,8 +966,7 @@ public function eventDestroy($id)
 
     public function departmentList()
     {
-        $departments = Department::with('admins.user')
-            ->get();
+        $departments = Department::with('admins.user')->where('dept_name', '!=', 'root')->get();
         $totalNumber = Department::where('dept_name', '!=', 'root')->count();
         $currentDateTime = now()->format('Y-m-d');
         $authenticatedUser = Auth::user()->fullname;

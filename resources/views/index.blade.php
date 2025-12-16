@@ -352,7 +352,7 @@
                         <div class="team-card text-center">
                             @if ($member->profile_image)
                                 <div class="team-member-img">
-                                    <img src="{{ asset('images/profilePictures/' . $member->profile_image) }}"
+                                    <img src="{{ asset($member->profile_image) }}"
                                         class="shadow-lg mb-4 img-fluid rounded mx-auto" alt="{{ $member->name }}">
                                 </div>
                             @else

@@ -117,7 +117,7 @@
                             <td>{{ $member->name }}</td>
                             <td>{{ $member->name }}</td>
                             <td class="text-center">
-                                <img src="{{ asset('images/profilePictures/' . $member->profile_image) }}"
+                                <img src="{{ asset($member->profile_image) }}"
                                     class="img-fluid rounded-circle" alt=""
                                     style="width:50px; height: 50px;">
                             </td>

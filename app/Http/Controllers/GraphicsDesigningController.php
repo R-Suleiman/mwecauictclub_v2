@@ -31,6 +31,7 @@ class GraphicsDesigningController extends Controller
         // $user = User::where('registration_number', $searchNumber)->first();
         $user = User::where('registration_number', $searchNumber)
             ->where('usertype', '!=', 'admin')
+            ->where('usertype', '!=', 'root')
             ->where('category', '=', 'graphics designing')
             ->select('id', 'registration_number', 'fullname', 'course', 'category', 'email', 'created_at')->first();
         $totalResults = User::where('registration_number', $searchNumber)->select('id', 'registration_number', 'fullname', 'course', 'category', 'email', 'created_at')->count();
@@ -54,35 +55,41 @@ class GraphicsDesigningController extends Controller
         $authicatedUser = Auth::user();
         $graphicsMembers = User::where('category', 'graphics designing')
             ->where('usertype', '!=', 'admin')
+            ->where('usertype', '!=', 'root')
             ->get();
 
         $totalGraphicsMembers = User::where('category', 'graphics designing')
             ->where('id', '!=', $authicatedUser->id)
             ->where('usertype', '!=', 'admin')
+            ->where('usertype', '!=', 'root')
             ->count();
 
         //fetching all active members under programming department
         $totalActiveMembers = user::where('payment_status', 'active')
             ->where('category', 'graphics designing')
             ->where('usertype', '!=', 'admin')
+            ->where('usertype', '!=', 'root')
             ->where('id', '!=', $authicatedUser->id)
             ->count();
 
         $activeMembers = user::where('payment_status', 'active')
             ->where('category', 'graphics designing')
             ->where('usertype', '!=', 'admin')
+            ->where('usertype', '!=', 'root')
             ->where('id', '!=', $authicatedUser->id)
             ->get();
 
         //fetching all inactive members under programming department
         $totalInactiveMembers = user::where('payment_status', 'inactive')
             ->where('category', 'graphics designing')
+            ->where('usertype', '!=', 'root')
             ->where('id', '!=', $authicatedUser->id)
             ->count();
 
         $inactiveMembers = user::where('payment_status', 'inactive')
             ->where('category', 'graphics designing')
             ->where('id', '!=', $authicatedUser->id)
+            ->where('usertype', '!=', 'root')
             ->get();
 
         $totalRescources = resource::all()->count();
